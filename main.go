@@ -4,7 +4,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 
@@ -32,6 +34,9 @@ func main() {
 	flag.Parse()
 	log.SetLogger(zap.New(zap.UseFlagOptions(&logOptions)))
 	mainLog := log.Log.WithName("main")
+
+	mainLog.Info(fmt.Sprintf(
+		"Starting with these flags:\n%s", strings.Join(os.Args[1:], "\n")))
 
 	mainLog.Info("Setting up manager")
 	mgr, err := manager.New(config.GetConfigOrDie(), manager.Options{})
