@@ -73,7 +73,7 @@ jobs:
         aws-region: us-west-2
         role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
         role-session-name: github-action
-        role-duration-seconds: 300
+        role-duration-seconds: 900
     - name: Login to AWS ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
