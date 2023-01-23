@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	defaultDrainAnnotationName = "ektopistis.io/drain"
+	defaultDrainTaintName = "ektopistis.io/drain"
 )
 
 func getFullPodName(pod *corev1.Pod) string {
@@ -26,7 +26,7 @@ func getFullPodName(pod *corev1.Pod) string {
 }
 
 type DrainOptions struct {
-	DrainAnnotation string
+	DrainTaintName string
 }
 
 type nodeDrainer struct {
@@ -36,8 +36,8 @@ type nodeDrainer struct {
 
 func NewNodeDrainer(client client.Client, options *DrainOptions) reconcile.Reconciler {
 	result := &nodeDrainer{client: client}
-	if result.options.DrainAnnotation == "" {
-		result.options.DrainAnnotation = defaultDrainAnnotationName
+	if result.options.DrainTaintName == "" {
+		result.options.DrainTaintName = defaultDrainTaintName
 	}
 	return result
 }
@@ -55,6 +55,15 @@ func (r *nodeDrainer) haveUnschedulableNodes(ctx context.Context) (bool, error) 
 	return false, nil
 }
 
+func (r *nodeDrainer) nodeHasDrainingTaint(node *corev1.Node) bool {
+	for _, taint := range node.Spec.Taints {
+		if taint.Key == r.options.DrainTaintName && taint.Effect == "NoSchedule" {
+			return true
+		}
+	}
+	return false
+}
+
 func (r *nodeDrainer) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	log := log.FromContext(ctx)
 
@@ -70,7 +79,7 @@ func (r *nodeDrainer) Reconcile(ctx context.Context, request reconcile.Request) 
 
 	log.V(2).Info("Reconciling Node")
 
-	if node.Annotations == nil || node.Annotations[r.options.DrainAnnotation] == "" {
+	if !r.nodeHasDrainingTaint(&node) {
 		return reconcile.Result{}, nil
 	}
 
@@ -90,7 +99,7 @@ func (r *nodeDrainer) Reconcile(ctx context.Context, request reconcile.Request) 
 		node.Spec.Unschedulable = true
 
 		if err := r.client.Update(ctx, &node); err != nil {
-			log.Error(err, "Could not update node")
+			log.Error(err, "Could not update node", "reason", "marking unschedulable")
 			return reconcile.Result{RequeueAfter: 1 * time.Minute}, err
 		}
 	}

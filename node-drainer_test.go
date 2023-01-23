@@ -149,6 +149,11 @@ var _ = ginkgo.Describe("NodeDrainer", func() {
 					Annotations: map[string]string{"ektopistis.io/drain": "ami-obsolete"},
 				},
 				Spec: corev1.NodeSpec{
+					Taints: []corev1.Taint{{
+						Key:    "ektopistis.io/drain",
+						Effect: "NoSchedule",
+						Value:  "yes",
+					}},
 					Unschedulable: false,
 				},
 			}}
@@ -165,14 +170,17 @@ var _ = ginkgo.Describe("NodeDrainer", func() {
 				gomega.BeTrue(), "Labeled nodes must be marked unschedulable")
 		})
 
-		ginkgo.It("Should work with alternative annotation", func() {
+		ginkgo.It("Should work with alternative taint name", func() {
 			nodeDrainer = NewNodeDrainer(
 				fakeClient,
-				&DrainOptions{DrainAnnotation: "some-other-annotation"},
+				&DrainOptions{DrainTaintName: "some-other-taint"},
 			)
-			nodes[0].Annotations = map[string]string{
-				"some-other-annotation": "value",
-			}
+			nodes[0].Spec.Taints = []corev1.Taint{{
+				Key:    "some-other-annotation",
+				Effect: "NoSchedule",
+				Value:  "yes",
+			}}
+
 			_, err := nodeDrainer.Reconcile(ctx, request)
 			g.Expect(err).ToNot(gomega.HaveOccurred())
 
@@ -180,7 +188,7 @@ var _ = ginkgo.Describe("NodeDrainer", func() {
 			err = fakeClient.Get(ctx, request.NamespacedName, &resultNode)
 			g.Expect(err).ToNot(gomega.HaveOccurred(), "Unexpected error in fake client")
 			g.Expect(resultNode.Spec.Unschedulable).To(
-				gomega.BeTrue(), "Labeled nodes must be marked unschedulable")
+				gomega.BeTrue(), "Nodes marked for draining must be set unschedulable")
 		})
 
 		ginkgo.When("Other unschedulable nodes are present", func() {
@@ -190,6 +198,11 @@ var _ = ginkgo.Describe("NodeDrainer", func() {
 						Name: "other-node",
 					},
 					Spec: corev1.NodeSpec{
+						Taints: []corev1.Taint{{
+							Key:    "ektopistis.io/drain",
+							Effect: "NoSchedule",
+							Value:  "yes",
+						}},
 						Unschedulable: true,
 					},
 				})
@@ -197,6 +210,7 @@ var _ = ginkgo.Describe("NodeDrainer", func() {
 			ginkgo.It("Should postpone cordoning", func() {
 				result, err := nodeDrainer.Reconcile(ctx, request)
 				g.Expect(err).ToNot(gomega.HaveOccurred())
+
 				g.Expect(result.RequeueAfter).To(gomega.Equal(15 * time.Minute))
 
 				resultNode := corev1.Node{}

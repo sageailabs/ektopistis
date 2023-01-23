@@ -22,10 +22,10 @@ func main() {
 	var drainOptions DrainOptions
 
 	flag.StringVar(
-		&drainOptions.DrainAnnotation,
-		"drain-annotation-name",
-		defaultDrainAnnotationName,
-		"Name of the annotation that will mark the nodes to drain")
+		&drainOptions.DrainTaintName,
+		"drain-taint-name",
+		defaultDrainTaintName,
+		"Name of the taing that will mark the nodes for draining")
 
 	logOptions := zap.Options{}
 	logOptions.BindFlags(flag.CommandLine)

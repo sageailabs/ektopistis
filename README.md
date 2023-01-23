@@ -2,7 +2,7 @@
 Drains Kubernetes nodes based on specified criteria
 
 This program watches for nodes in a Kubernetes cluster and drains (evicts pods
-from) the ones that a labeled with a specific label.  It tries to evict all the
+from) the ones that a tainted with a specified taint.  It tries to evict all the
 pods from the node, except for those controlled by daemon sets.
 
 The project is intended as a simple replacement for
