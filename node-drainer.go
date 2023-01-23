@@ -35,7 +35,7 @@ type nodeDrainer struct {
 }
 
 func NewNodeDrainer(client client.Client, options *DrainOptions) reconcile.Reconciler {
-	result := &nodeDrainer{client: client}
+	result := &nodeDrainer{client: client, options: *options}
 	if result.options.DrainTaintName == "" {
 		result.options.DrainTaintName = defaultDrainTaintName
 	}
@@ -74,7 +74,7 @@ func (r *nodeDrainer) Reconcile(ctx context.Context, request reconcile.Request) 
 		return reconcile.Result{}, nil
 	}
 	if err != nil {
-		return reconcile.Result{}, fmt.Errorf("Could nod fetch node: %+v", err)
+		return reconcile.Result{}, fmt.Errorf("could nod fetch node: %+v", err)
 	}
 
 	log.V(2).Info("Reconciling Node")

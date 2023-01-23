@@ -132,21 +132,18 @@ var _ = ginkgo.Describe("NodeDrainer", func() {
 			Namespace: "test",
 		}
 		ginkgo.BeforeEach(func() {
-			pods = []*corev1.Pod{
-				&corev1.Pod{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-pod",
-						Namespace: "test",
-					},
-					Spec: corev1.PodSpec{
-						NodeName: "test-node",
-					},
-				},
-			}
-			nodes = []*corev1.Node{&corev1.Node{
+			pods = []*corev1.Pod{{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:        "test-node",
-					Annotations: map[string]string{"ektopistis.io/drain": "ami-obsolete"},
+					Name:      "test-pod",
+					Namespace: "test",
+				},
+				Spec: corev1.PodSpec{
+					NodeName: "test-node",
+				},
+			}}
+			nodes = []*corev1.Node{{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-node",
 				},
 				Spec: corev1.NodeSpec{
 					Taints: []corev1.Taint{{
@@ -170,25 +167,26 @@ var _ = ginkgo.Describe("NodeDrainer", func() {
 				gomega.BeTrue(), "Labeled nodes must be marked unschedulable")
 		})
 
-		ginkgo.It("Should work with alternative taint name", func() {
-			nodeDrainer = NewNodeDrainer(
-				fakeClient,
-				&DrainOptions{DrainTaintName: "some-other-taint"},
-			)
-			nodes[0].Spec.Taints = []corev1.Taint{{
-				Key:    "some-other-annotation",
-				Effect: "NoSchedule",
-				Value:  "yes",
-			}}
+		ginkgo.When("alternative taint name is used", func() {
+			ginkgo.BeforeEach(func() {
+				nodes[0].Spec.Taints[0].Key = "some-other-taint"
+			})
 
-			_, err := nodeDrainer.Reconcile(ctx, request)
-			g.Expect(err).ToNot(gomega.HaveOccurred())
+			ginkgo.It("Should mark node unschedulable", func() {
+				nodeDrainer = NewNodeDrainer(
+					fakeClient,
+					&DrainOptions{DrainTaintName: "some-other-taint"},
+				)
 
-			resultNode := corev1.Node{}
-			err = fakeClient.Get(ctx, request.NamespacedName, &resultNode)
-			g.Expect(err).ToNot(gomega.HaveOccurred(), "Unexpected error in fake client")
-			g.Expect(resultNode.Spec.Unschedulable).To(
-				gomega.BeTrue(), "Nodes marked for draining must be set unschedulable")
+				_, err := nodeDrainer.Reconcile(ctx, request)
+				g.Expect(err).ToNot(gomega.HaveOccurred())
+
+				resultNode := corev1.Node{}
+				err = fakeClient.Get(ctx, request.NamespacedName, &resultNode)
+				g.Expect(err).ToNot(gomega.HaveOccurred(), "Unexpected error in fake client")
+				g.Expect(resultNode.Spec.Unschedulable).To(
+					gomega.BeTrue(), "Nodes marked for draining must be set unschedulable")
+			})
 		})
 
 		ginkgo.When("Other unschedulable nodes are present", func() {
