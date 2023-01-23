@@ -67,12 +67,6 @@ jobs:
       uses: actions/setup-go@v3
       with:
         go-version-file: go.mod
-    - name: Build image
-      run: make docker/build DOCKER_IMAGE=$REGISTRY/$REPOSITORY DOCKER_IMAGE_TAG=$IMAGE_TAG
-      env:
-        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        REPOSITORY: ektopistis
-        IMAGE_TAG: main-${{ github.sha }}-${{ steps.generate-timestamp.outputs.timestamp }}
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -83,5 +77,15 @@ jobs:
     - name: Login to AWS ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
+    - name: Build image
+      run: make docker/build DOCKER_IMAGE=$REGISTRY/$REPOSITORY DOCKER_IMAGE_TAG=$IMAGE_TAG
+      env:
+        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        REPOSITORY: ektopistis
+        IMAGE_TAG: main-${{ github.sha }}-${{ steps.generate-timestamp.outputs.timestamp }}
     - name: Push image
       run: docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+      env:
+        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        REPOSITORY: ektopistis
+        IMAGE_TAG: main-${{ github.sha }}-${{ steps.generate-timestamp.outputs.timestamp }}
