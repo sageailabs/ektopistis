@@ -162,7 +162,9 @@ func (r *nodeDrainer) evictNodePods(ctx context.Context, node *corev1.Node) (rec
 			if errors.IsNotFound(err) || (err == nil && actualPod.Spec.NodeName != node.Name) {
 				continue // The pod has left the building.
 			}
-			log.Error(err, "Unable to retrieve pod", "pod", fmt.Sprintf("%s/%s", pod.Namespace, pod.Name))
+			if err != nil {
+				log.Error(err, "Unable to retrieve pod", "pod", fmt.Sprintf("%s/%s", pod.Namespace, pod.Name))
+			}
 			remainingPods = append(remainingPods, pod)
 		}
 		return len(remainingPods) == 0, nil
