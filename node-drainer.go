@@ -154,21 +154,26 @@ func (r *nodeDrainer) evictNodePods(ctx context.Context, node *corev1.Node) (rec
 	pollInterval := 10 * time.Second
 	pollTimeout := 20 * time.Minute
 	remainingPods := make([]*corev1.Pod, 0, len(pods.Items))
-	err = wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
-		remainingPods = remainingPods[:0]
-		for _, pod := range podsUnderEviction {
-			actualPod := corev1.Pod{}
-			err := r.client.Get(ctx, client.ObjectKey{Namespace: pod.Namespace, Name: pod.Name}, &actualPod)
-			if errors.IsNotFound(err) || (err == nil && actualPod.Spec.NodeName != node.Name) {
-				continue // The pod has left the building.
+	err = wait.PollUntilContextTimeout(
+		ctx,
+		pollInterval,
+		pollTimeout,
+		true,
+		func(ctx context.Context) (bool, error) {
+			remainingPods = remainingPods[:0]
+			for _, pod := range podsUnderEviction {
+				actualPod := corev1.Pod{}
+				err := r.client.Get(ctx, client.ObjectKey{Namespace: pod.Namespace, Name: pod.Name}, &actualPod)
+				if errors.IsNotFound(err) || (err == nil && actualPod.Spec.NodeName != node.Name) {
+					continue // The pod has left the building.
+				}
+				if err != nil {
+					log.Error(err, "Unable to retrieve pod", "pod", fmt.Sprintf("%s/%s", pod.Namespace, pod.Name))
+				}
+				remainingPods = append(remainingPods, pod)
 			}
-			if err != nil {
-				log.Error(err, "Unable to retrieve pod", "pod", fmt.Sprintf("%s/%s", pod.Namespace, pod.Name))
-			}
-			remainingPods = append(remainingPods, pod)
-		}
-		return len(remainingPods) == 0, nil
-	})
+			return len(remainingPods) == 0, nil
+		})
 	if err != nil {
 		log.Error(err, "Error waiting for pod eviction")
 		return reconcile.Result{RequeueAfter: 1 * time.Minute}, nil

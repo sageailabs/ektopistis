@@ -55,7 +55,11 @@ func main() {
 	}
 
 	mainLog.Info("Setting up node watch")
-	if err := cont.Watch(&source.Kind{Type: &corev1.Node{}}, &handler.EnqueueRequestForObject{}); err != nil {
+	err = cont.Watch(
+		source.Kind(mgr.GetCache(), &corev1.Node{}),
+		&handler.EnqueueRequestForObject{},
+	)
+	if err != nil {
 		mainLog.Error(err, "Unable to watch nodes")
 		os.Exit(1)
 	}
