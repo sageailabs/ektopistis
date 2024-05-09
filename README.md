@@ -21,6 +21,10 @@ Run the binary with providing it with the taint name to use:
 ```
 ektopistis --drain-taint-name=ektopistis.io/drain
 ```
+You can also run the program from a container:
+```
+docker run sageai/ektopistis --drain-taint-name=ektopistis.io/drain
+```
 If you are running the program outside a cluster, point it to the cluster to
 connect to using the `--kubeconfig` flag or the `KUBECONFIG` environment
 variable.
