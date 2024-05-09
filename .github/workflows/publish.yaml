@@ -14,14 +14,12 @@ permissions:
   contents: read   # This is required for actions/checkout.
 
 jobs:
-  buid-lint-test:
+  build-lint-test:
     uses: ./.github/workflows/build-lint-test.yml
   push:
     runs-on: ubuntu-latest
     needs:
-    - build-lint-test / build
-    - build-lint-test / lint
-    - build-lint-test / unit-tests
+    - build-lint-test
     steps:
     - name: Generate timestamp
       id: generate-timestamp
