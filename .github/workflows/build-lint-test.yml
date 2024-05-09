@@ -1,0 +1,44 @@
+name: build-lint-test
+
+on:
+  workflow_call: {}
+
+permissions:
+  contents: read   # This is required for actions/checkout.
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: go.mod
+    - name: Lint
+      uses: golangci/golangci-lint-action@v6
+      with:
+        args: --timeout=180s
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: go.mod
+    - name: Run unit tests
+      run: make test
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: go.mod
+    - name: Build image
+      run: make docker/build
