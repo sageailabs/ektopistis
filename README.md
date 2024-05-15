@@ -36,7 +36,7 @@ command line option `--ignore-taint`.  For example:
 Autoscaler pods to tolerate that taint.
 
 You can mark specific nodes for draining by tainting them directly or you can
-write a script to mark them based on specific criteria.  For exampe, the script
+write a script to mark them based on specific criteria.  For example, the script
 in [examples/aws-ami-upgrade-tainter.sh](examples/aws-ami-upgrade-tainter.sh)
 will taint all nodes in an AWS account which have AMI ID that does not match an
 AMI ID in their launch template.
