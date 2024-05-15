@@ -38,10 +38,10 @@ securityContext:
 resources:
   requests:
     cpu: 40m
-    memory: 50Mi
+    memory: 80Mi
   limits:
     cpu: 50m
-    memory: 50Mi
+    memory: 80Mi
 
 nodeSelector: {}
 
