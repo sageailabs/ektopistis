@@ -1,4 +1,5 @@
 .*.sw?
 ektopistis
+!charts/ektopistis
 __debug_bin
 .vscode/
