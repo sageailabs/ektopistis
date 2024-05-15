@@ -1,0 +1,30 @@
+apiVersion: rbac.authirization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "ektopistis.fullname" . }}
+  labels: {{- include "ektopistis.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - patch
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ''
+  resources:
+  - pods/eviction
+  verbs:
+  - create

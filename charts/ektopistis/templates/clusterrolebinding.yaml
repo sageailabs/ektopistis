@@ -1,0 +1,13 @@
+apiVersion: rbac.authirization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "ektopistis.fullname" . }}
+  labels: {{- include "ektopistis.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authirization.k8s.io
+  kind: ClusterRole
+  name: {{ include "ektopistis.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "ektopistis.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
