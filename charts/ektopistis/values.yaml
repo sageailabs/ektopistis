@@ -1,9 +1,5 @@
 # Default values for ektopistis.
 # This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-replicaCount: 1
-
 image:
   repository: sageai/ektopistis
   pullPolicy: IfNotPresent

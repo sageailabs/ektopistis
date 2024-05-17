@@ -41,6 +41,34 @@ in [examples/aws-ami-upgrade-tainter.sh](examples/aws-ami-upgrade-tainter.sh)
 will taint all nodes in an AWS account which have AMI ID that does not match an
 AMI ID in their launch template.
 
+## Installation
+
+You can install ektopistis using Helm:
+
+```
+helm repo add ektopistis https://sageailabs.github.io/ektopistis
+helm repo update ektopistis
+helm update -i ektopistis/ektopistis -n <target-namespace>
+```
+
+### Parameters
+
+| Parameter | Description | Default value |
+|-----------|-------------|---------------|
+| `taintName` | Name of the taint to use for marking nodes for draining   | `ektopistis.io/drain` |
+| `extraArgs` | List of arguments to pass to the program | `[]` |
+| `image.repository` | Docker repository for images | `sageai/ektopistis` |
+| `image.tag` | Image tag to use | Value of `.Chart.AppVersion` |
+| `imagePullSecrets` | List of references to secrets to use to pull the container image | `[]` |
+| `podAnnotations` | Annotations to set on the pods | `{}` |
+| `resources` | Resources to request for the pods | `{"requests":{"cpu":"40m","memory":"80Mi"}, "limits":{"cpu":"50m","memory":"80Mi"}}` |
+
+### Uninstalling
+
+```
+helm uninstall ektopistis -n <target-namespace>
+```
+
 ## Building
 
 You can build the program with `make build`.  A Docker image can be built
