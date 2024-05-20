@@ -86,3 +86,34 @@ configuration file.  For more extensive diagnostics, provide the
 $ KUBECONFIG=<path to kube config> go run ./... --zap-log-level=2
 ```
 The running program can be interrupted by `Ctrl+C`.
+
+## Contributing
+
+### Bug Reports and Feature Requests
+
+Please use the [issue tracker](https://github.com/sageailabs/ektopistis/issues)
+to report any bugs or file feature requests.
+
+## Submitting a Pull Request on GitHub
+
+This project uses GitHub's pull request process. Follow these steps to submit a
+pull request:
+
+1. **Fork the Repository**: Create a copy of the main repository in your GitHub
+   account.
+1. **Make Changes**: Push any changes to a new branch on your forked repository.
+1. **Create a Pull Request**: Open a pull request from your branch to the main
+   repository.
+
+### Requirements for Merging a Pull Request
+
+Before your pull request can be merged, the following steps must be completed:
+
+1. **Document the Issue**: Ideally, there should be an issue that thoroughly
+   documents the problem or feature.
+1. **Test Coverage**: Ensure that any new code has a reasonable amount of test
+   coverage.
+1. **Pass Tests**: All tests must pass.
+1. **Review and Approval**: The pull request needs to be reviewed and approved.
+
+Once these steps are completed, a code owner will merge the pull request.

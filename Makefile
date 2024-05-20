@@ -21,8 +21,8 @@ build: go.mod main.go node-drainer.go ## Build the ektopistis binary
 
 .PHONY: lint
 lint: ## Lint using gofmt and govet
-	go fmt ./...
 	go vet ./...
+	go fmt ./...
 
 .PHONY: test
 test: ## Run all tests
@@ -36,7 +36,7 @@ test/coverage: ## Run all tests under coverage and generate coverage report
 .PHONY: clean
 clean: ## Clean build artifacts
 	go clean
-	rm ${BINARY_NAME}
+	rm ${BINARY_NAME} coverage.txt coverage.html
 
 ##@ Docker
 
