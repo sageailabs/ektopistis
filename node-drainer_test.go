@@ -142,7 +142,69 @@ var _ = ginkgo.Describe("NodeDrainer", func() {
 			},
 		}
 	})
-	ginkgo.When("Node is marked for draining", func() {
+
+	ginkgo.When("node is not marked for draining", func() {
+		podName := types.NamespacedName{
+			Name:      "test-pod",
+			Namespace: "test",
+		}
+		ginkgo.BeforeEach(func() {
+			pods = []*corev1.Pod{{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-pod",
+					Namespace: "test",
+				},
+				Spec: corev1.PodSpec{
+					NodeName: "test-node",
+				},
+			}}
+			nodes = []*corev1.Node{{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-node",
+				},
+				Spec: corev1.NodeSpec{
+					Taints:        []corev1.Taint{},
+					Unschedulable: false,
+				},
+			}}
+		})
+
+		ginkgo.It("should not make the node unschedulable", func() {
+			_, err := nodeDrainer.Reconcile(ctx, request)
+			g.Expect(err).ToNot(gomega.HaveOccurred())
+
+			resultNode := corev1.Node{}
+			err = fakeClient.Get(ctx, request.NamespacedName, &resultNode)
+			g.Expect(err).ToNot(gomega.HaveOccurred(), "Unexpected error in fake client")
+			g.Expect(resultNode.Spec.Unschedulable).To(
+				gomega.BeFalse(),
+				"Non-labeled nodes must not be marked unschedulable",
+			)
+		})
+
+		ginkgo.It("should not evict node pods", func() {
+			fakeClient.eviction.On(
+				"Create",
+				mock.Anything,
+				mock.Anything,
+				mock.Anything,
+				mock.Anything,
+			).Run(func(args mock.Arguments) {
+				ginkgo.Fail("Should not evict pods from non-tainted node")
+			})
+
+			_, err := nodeDrainer.Reconcile(ctx, request)
+			g.Expect(err).ToNot(gomega.HaveOccurred())
+			_, err = nodeDrainer.Reconcile(ctx, request)
+			g.Expect(err).ToNot(gomega.HaveOccurred())
+
+			resultPod := corev1.Pod{}
+			err = fakeClient.Get(ctx, podName, &resultPod)
+			g.Expect(err).ToNot(gomega.HaveOccurred(), "Pods must not be deleted")
+		})
+	})
+
+	ginkgo.When("node is marked for draining", func() {
 		podName := types.NamespacedName{
 			Name:      "test-pod",
 			Namespace: "test",
@@ -172,7 +234,7 @@ var _ = ginkgo.Describe("NodeDrainer", func() {
 			}}
 		})
 
-		ginkgo.It("Should mark node unschedulable", func() {
+		ginkgo.It("should mark node unschedulable", func() {
 			_, err := nodeDrainer.Reconcile(ctx, request)
 			g.Expect(err).ToNot(gomega.HaveOccurred())
 
@@ -188,7 +250,7 @@ var _ = ginkgo.Describe("NodeDrainer", func() {
 				nodes[0].Spec.Taints[0].Key = "some-other-taint"
 			})
 
-			ginkgo.It("Should mark node unschedulable", func() {
+			ginkgo.It("should mark node unschedulable", func() {
 				nodeDrainer = NewNodeDrainer(
 					fakeClient,
 					&DrainOptions{DrainTaintName: "some-other-taint"},
@@ -205,7 +267,7 @@ var _ = ginkgo.Describe("NodeDrainer", func() {
 			})
 		})
 
-		ginkgo.When("Other unschedulable nodes are present", func() {
+		ginkgo.When("other unschedulable nodes are present", func() {
 			ginkgo.BeforeEach(func() {
 				nodes = append(nodes, &corev1.Node{
 					ObjectMeta: metav1.ObjectMeta{
@@ -221,7 +283,7 @@ var _ = ginkgo.Describe("NodeDrainer", func() {
 					},
 				})
 			})
-			ginkgo.It("Should postpone cordoning", func() {
+			ginkgo.It("should postpone cordoning", func() {
 				result, err := nodeDrainer.Reconcile(ctx, request)
 				g.Expect(err).ToNot(gomega.HaveOccurred())
 
@@ -236,7 +298,53 @@ var _ = ginkgo.Describe("NodeDrainer", func() {
 			})
 		})
 
-		ginkgo.It("Should evict node pods", func() {
+		ginkgo.When("pending pods are present", func() {
+			podName := types.NamespacedName{
+				Name:      "test-pod",
+				Namespace: "test",
+			}
+
+			ginkgo.BeforeEach(func() {
+				pods = append(pods, &corev1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "pending-pod",
+						Namespace: "test",
+					},
+					Spec: corev1.PodSpec{
+						NodeName: "other-node",
+					},
+					Status: corev1.PodStatus{Phase: "Pending"},
+				})
+				nodes = append(nodes, &corev1.Node{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "other-node",
+					},
+				})
+			})
+
+			ginkgo.It("should not evict pods", func() {
+				fakeClient.eviction.On(
+					"Create",
+					mock.Anything,
+					mock.Anything,
+					mock.Anything,
+					mock.Anything,
+				).Run(func(args mock.Arguments) {
+					ginkgo.Fail("Should not evict pods when pending pods are present")
+				}).Return(nil).Once()
+
+				_, err := nodeDrainer.Reconcile(ctx, request)
+				g.Expect(err).ToNot(gomega.HaveOccurred())
+				_, err = nodeDrainer.Reconcile(ctx, request)
+				g.Expect(err).ToNot(gomega.HaveOccurred())
+
+				resultPod := corev1.Pod{}
+				err = fakeClient.Get(ctx, podName, &resultPod)
+				g.Expect(err).ToNot(gomega.HaveOccurred(), "Pods must not be deleted")
+			})
+		})
+
+		ginkgo.It("should evict node pods", func() {
 			fakeClient.eviction.On(
 				"Create",
 				mock.Anything,
@@ -262,7 +370,7 @@ var _ = ginkgo.Describe("NodeDrainer", func() {
 				"Pod must be deleted")
 		})
 
-		ginkgo.It("Should retry eviction after errors", func() {
+		ginkgo.It("should retry eviction after errors", func() {
 			fakeClient.eviction.On(
 				"Create",
 				mock.Anything,

@@ -26,7 +26,12 @@ lint: ## Lint using gofmt and govet
 
 .PHONY: test
 test: ## Run all tests
-	go test -v ./...
+	go run github.com/onsi/ginkgo/v2/ginkgo -r
+
+.PHONY: test/coverage
+test/coverage: ## Run all tests under coverage and generate coverage report
+	go run github.com/onsi/ginkgo/v2/ginkgo -r --coverprofile=coverage.txt
+	go tool cover --html=coverage.txt -o coverage.html
 
 .PHONY: clean
 clean: ## Clean build artifacts

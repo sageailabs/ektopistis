@@ -3,3 +3,5 @@ ektopistis
 !charts/ektopistis
 __debug_bin
 .vscode/
+coverage.txt
+coverage.html
