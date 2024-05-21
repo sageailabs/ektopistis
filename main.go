@@ -43,7 +43,7 @@ func main() {
 		&drainOptions.DrainTaintName,
 		"drain-taint-name",
 		defaultDrainTaintName,
-		"Name of the taing that will mark the nodes for draining")
+		"Name of the taint that will mark the nodes for draining")
 
 	logOptions := zap.Options{}
 	logOptions.BindFlags(flag.CommandLine)
@@ -71,10 +71,13 @@ func main() {
 	}
 
 	mainLog.Info("Setting up node watch")
-	err = cont.Watch(
-		source.Kind(mgr.GetCache(), &corev1.Node{}),
-		&handler.EnqueueRequestForObject{},
-	)
+	err = cont.Watch(source.Kind(
+		mgr.GetCache(),
+		&corev1.Node{},
+		handler.TypedEventHandler[*corev1.Node](
+			&handler.TypedEnqueueRequestForObject[*corev1.Node]{},
+		),
+	))
 	if err != nil {
 		mainLog.Error(err, "Unable to watch nodes")
 		os.Exit(1)

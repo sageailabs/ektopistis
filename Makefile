@@ -17,7 +17,7 @@ help:
 .PHONY: build
 build: go.mod main.go node-drainer.go ## Build the ektopistis binary
 	go mod tidy
-	go build -o ${BINARY_NAME}
+	CGO_ENABLED=0 go build -o ${BINARY_NAME}
 
 .PHONY: lint
 lint: ## Lint using gofmt and govet
