@@ -15,6 +15,12 @@ with a process or a job which will select and taint nodes intended for draining.
 The project is intended as a simple replacement for
 [Draino](https://github.com/planetlabs/draino) which is no longer maintained.
 
+### Limitations
+
+Currently, ektopistis has been tested on clusters with up to a few dozen nodes.
+Its performance may suffer on larger clusters and more work may be needed to
+accommodate them.
+
 ## Usage
 
 Run the binary with providing it with the taint name to use:
