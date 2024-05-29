@@ -294,7 +294,7 @@ var _ = ginkgo.Describe("NodeDrainer", func() {
 				g.Expect(err).ToNot(gomega.HaveOccurred(), "Unexpected error in fake client")
 				g.Expect(resultNode.Spec.Unschedulable).To(
 					gomega.BeFalse(),
-					"When the unschedulabel node is present, should not mark as unschedulable")
+					"When the unschedulable node is present, should not mark as unschedulable")
 			})
 		})
 
