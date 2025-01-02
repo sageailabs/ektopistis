@@ -33,6 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
@@ -74,7 +75,7 @@ func main() {
 	err = cont.Watch(source.Kind(
 		mgr.GetCache(),
 		&corev1.Node{},
-		handler.TypedEventHandler[*corev1.Node](
+		handler.TypedEventHandler[*corev1.Node, reconcile.Request](
 			&handler.TypedEnqueueRequestForObject[*corev1.Node]{},
 		),
 	))
