@@ -30,6 +30,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -84,6 +85,15 @@ func (c *mockEvictionClient) Patch(
 	opts ...client.SubResourcePatchOption,
 ) error {
 	args := c.Called(ctx, obj, patch, opts)
+	return args.Error(0)
+}
+
+func (c *mockEvictionClient) Apply(
+	ctx context.Context,
+	obj runtime.ApplyConfiguration,
+	opts ...client.SubResourceApplyOption,
+) error {
+	args := c.Called(ctx, obj, opts)
 	return args.Error(0)
 }
 
