@@ -3,9 +3,9 @@ entries:
   ektopistis:
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2026-07-07T20:40:56.543462519Z"
+    created: "2026-10-21T22:50:40.019817446Z"
     description: A Helm chart for Kubernetes
-    digest: db1a7ee4a861a99dfd1060b159a87b8e8a38ec56f93684729422fc9ae0a2d2bd
+    digest: b1fe8ee2b1896d084b9e2b767ee315536b6c8479329b31e3e7bfa7648227973e
     home: https://github.com/sageailabs/ektopistis
     maintainers:
     - name: sageailabs
@@ -33,4 +33,4 @@ entries:
     urls:
     - https://sageailabs.github.io/ektopistis/ektopistis-0.1.3.tgz
     version: 0.1.3
-generated: "2026-07-07T20:40:56.542350891Z"
+generated: "2026-10-21T22:50:40.019368849Z"
